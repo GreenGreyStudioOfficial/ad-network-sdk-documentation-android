@@ -167,7 +167,7 @@ class ShowActivity : AppCompatActivity() {
 
 Library is distributed as an artifact for **maven** `com.greengray:advsdk`
 
-current library version `com.greengray:advsdk:1.3.1`
+current library version `com.greengray:advsdk:1.3.5`
 
 You need GAME_ID - an application identifier in the ad serving system to work with the library.
 Contact [partners@mobidriven.com](partners@mobidriven.com) to receive the identifier.
