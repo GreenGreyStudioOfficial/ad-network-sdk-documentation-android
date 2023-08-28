@@ -202,9 +202,9 @@ dependencyResolutionManagement {
     }}
 ```
 
-2. add library `com.greengray:advsdk:1.3.1` to dependancy block **build.gradle** of module level
+2. add library `com.greengray:advsdk:1.3.5` to dependancy block **build.gradle** of module level
 
-```implementation 'com.greengray:advsdk:1.3.1'```
+```implementation 'com.greengray:advsdk:1.3.5'```
     
 ![Screenshot_4.png](/images/Screenshot_4.png)
 
