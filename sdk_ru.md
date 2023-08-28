@@ -201,9 +201,9 @@ dependencyResolutionManagement {
     }}
 ```
 
-2. добавить библиотеку `com.greengray:advsdk:1.3.1` в блок зависимостей **build.gradle** уровня модуля
+2. добавить библиотеку `com.greengray:advsdk:1.3.5` в блок зависимостей **build.gradle** уровня модуля
 
-```implementation 'com.greengray:advsdk:1.3.1'```
+```implementation 'com.greengray:advsdk:1.3.5'```
     
 ![Screenshot_4.png](/images/Screenshot_4.png)
 
