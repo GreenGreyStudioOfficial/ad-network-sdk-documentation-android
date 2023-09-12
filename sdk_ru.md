@@ -166,7 +166,7 @@ class ShowActivity : AppCompatActivity() {
 
 Библиотека распространяется как артефакт для **maven** `com.greengray:advsdk`
 
-актуальная версия библиотеки `com.greengray:advsdk:1.3.5`
+актуальная версия библиотеки `com.greengray:advsdk:1.4.0`
 
 Для работы с библиотекой необходим **GAME_ID** - идентификатор приложения в системе показа рекламы.
 Напишите на [a.bobkov@mobidriven.com](a.bobkov@mobidriven.com), чтобы получить идентификатор.
@@ -201,9 +201,9 @@ dependencyResolutionManagement {
     }}
 ```
 
-2. добавить библиотеку `com.greengray:advsdk:1.3.5` в блок зависимостей **build.gradle** уровня модуля
+2. добавить библиотеку `com.greengray:advsdk:1.4.0` в блок зависимостей **build.gradle** уровня модуля
 
-```implementation 'com.greengray:advsdk:1.3.5'```
+```implementation 'com.greengray:advsdk:1.4.0'```
     
 ![Screenshot_4.png](/images/Screenshot_4.png)
 
