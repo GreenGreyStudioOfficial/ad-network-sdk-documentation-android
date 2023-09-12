@@ -167,7 +167,7 @@ class ShowActivity : AppCompatActivity() {
 
 Library is distributed as an artifact for **maven** `com.greengray:advsdk`
 
-current library version `com.greengray:advsdk:1.3.5`
+current library version `com.greengray:advsdk:1.4.0`
 
 You need GAME_ID - an application identifier in the ad serving system to work with the library.
 Contact [partners@mobidriven.com](partners@mobidriven.com) to receive the identifier.
@@ -202,9 +202,9 @@ dependencyResolutionManagement {
     }}
 ```
 
-2. add library `com.greengray:advsdk:1.3.5` to dependancy block **build.gradle** of module level
+2. add library `com.greengray:advsdk:1.4.0` to dependancy block **build.gradle** of module level
 
-```implementation 'com.greengray:advsdk:1.3.5'```
+```implementation 'com.greengray:advsdk:1.4.0'```
     
 ![Screenshot_4.png](/images/Screenshot_4.png)
 
