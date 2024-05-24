@@ -10,10 +10,11 @@
 - [Как работать с библиотекой - пример](#lib_work)
 
 
-Данный SDK используется для работы с рекламой двух видов:
+Данный SDK используется для работы с рекламой трех видов:
 
 - видеорекламой
 - рекламой, отображаемой внутри **web-view**.
+- баннерной рекламой
 
 Решение о показе какого-либо типа рекламы принимается в зависимости от решений сервера.
 
@@ -21,7 +22,8 @@
 
 - инициирует библиотеку;
 - загружает рекламные объявления;
-- показывает рекламные объявления.
+- показывает рекламные объявления;
+- показывает баннер;
 
 Для того, чтобы совершать эту работу, в классе имеются методы, которые, как правило, выполняются в фоновом режиме. Чтобы реагировать на их выполнение, существуют интерфейсы слушателей. Пользователю SDK предстоит самостоятельно реализовать эти интерфейсы, в зависимости от своих нужд.
 Колбеки слушателей возвращают результат на основной поток
@@ -41,7 +43,7 @@ class InitActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)  
   
   
-        AdvSDK.INSTANCE.initialize(this.application, MY_GAME_ID, true, object : IAdInitializationListener {  
+        AdvSDK.initialize(this, MY_GAME_ID, true, object : IAdInitializationListener {  
             override fun onInitializationComplete() {  
                 Log.d("AdvSDK", "initialization complete")  
             }  
@@ -63,6 +65,7 @@ class InitActivity : AppCompatActivity() {
 |---|---|
 | `INTERSTITIAL` | Видео без вознаграждения|
 | `REWARDED` | Видео с вознаграждением|
+| `BANNER` | Рекламный баннер|
 
 Пример:
 
@@ -117,7 +120,6 @@ class LoadActivity : AppCompatActivity() {
 
 ```Kotlin
 class ShowActivity : AppCompatActivity() {  
-    private val advSDK = AdvSDK.INSTANCE  
     private lateinit var advId: String  
   
     override fun onCreate(savedInstanceState: Bundle?) {  
@@ -129,7 +131,7 @@ class ShowActivity : AppCompatActivity() {
         }  
   
         findViewById<View>(R.id.btnShow).setOnClickListener {  
-            advSDK.show(advId, object : IAdShowListener {  
+            AdvSDK.show(advId, object : IAdShowListener {  
                 override fun onShowChangeState(id: String, state: ShowCompletionState) {  
                     Log.d("AdvSDK", "show change state, id = $id ${state.name}")  
                 }  
@@ -141,10 +143,10 @@ class ShowActivity : AppCompatActivity() {
     }  
   
     private fun initAndLoadAdv(onError: ((String) -> Unit)? = null, onLoad: (String) -> Unit) {  
-        advSDK.initialize(this.application, MY_GAME_ID, true, object : IAdInitializationListener {  
+        AdvSDK.initialize(this, MY_GAME_ID, true, object : IAdInitializationListener {  
             override fun onInitializationComplete() {  
                 Log.d("AdvSDK", "initialization complete")  
-                advSDK.load(AdvertiseType.REWARDED, object : IAdLoadListener {  
+                AdvSDK.load(AdvertiseType.REWARDED, object : IAdLoadListener {  
                     override fun onLoadComplete(id: String) {  
                         Log.d("AdvSDK", "load complete, id = $id")  
                         onLoad(id)  
@@ -152,7 +154,72 @@ class ShowActivity : AppCompatActivity() {
                     override fun onLoadError(error: LoadErrorType, message: String, id: String) {  
                         Log.d("AdvSDK", "load error, id = $id, message $message")  
                         onError?.invoke("load error, id = $id, message $message")  
-                    }                })            }  
+                    }
+              })
+            }
+
+            override fun onInitializationError(error: InitializationErrorType, message: String) {  
+                Log.d("AdvSDK", "initialization error ${error.name} $message")  
+                onError?.invoke("initialization error $message")  
+            }        
+        })    
+    }
+}
+```
+
+```Kotlin
+class ShowBannerActivity : AppCompatActivity() {  
+    private lateinit var advId: String  
+  
+    override fun onCreate(savedInstanceState: Bundle?) {  
+        super.onCreate(savedInstanceState)  
+        setContentView(R.layout.activity_main)  
+  
+        initAndLoadAdv { id ->  
+            advId = id  
+        }  
+  
+        findViewById<View>(R.id.btnShow).setOnClickListener {  
+            AdvSDK.showBanner(advId, object : IAdShowBannerListener {  
+                override fun onBannerShow(id: String?) {
+                    Log.d("AdvSDK", "onBannerShow, id = $id")
+                }
+
+                override fun onBannerShowError(error: ShowErrorType, errorMessage: String, id: String?) {
+                    Log.d("AdvSDK", "onBannerShowError, id = $id errorMessage = ${error.name}")
+                }         
+            })        
+        }
+
+        findViewById<View>(R.id.btnHide).setOnClickListener {  
+            AdvSDK.hideBanner(advId, object : IAdHideBannerListener {  
+                override fun onBannerHide(id: String?) {
+                    Log.d("AdvSDK","onBannerHide, id = $id")
+                }
+
+                override fun onBannerHideError(error: ShowErrorType, errorMessage: String, id: String?) {
+                    Log.d("AdvSDK","onBannerHideError, id = $id errorMessage = ${error.name}")
+                }          
+            })        
+        }  
+    }  
+  
+    private fun initAndLoadAdv(onError: ((String) -> Unit)? = null, onLoad: (String) -> Unit) {  
+        advSDK.initialize(this, MY_GAME_ID, true, object : IAdInitializationListener {  
+            override fun onInitializationComplete() {  
+                Log.d("AdvSDK", "initialization complete")  
+                advSDK.load(AdvertiseType.BANNER, object : IAdLoadListener {  
+                    override fun onLoadComplete(id: String) {  
+                        Log.d("AdvSDK", "load complete, id = $id")  
+                        onLoad(id)  
+                    }  
+                    override fun onLoadError(error: LoadErrorType, message: String, id: String) {  
+                        Log.d("AdvSDK", "load error, id = $id, message $message")  
+                        onError?.invoke("load error, id = $id, message $message")  
+                    }
+              })
+            }
+
             override fun onInitializationError(error: InitializationErrorType, message: String) {  
                 Log.d("AdvSDK", "initialization error ${error.name} $message")  
                 onError?.invoke("initialization error $message")  
@@ -166,7 +233,7 @@ class ShowActivity : AppCompatActivity() {
 
 Библиотека распространяется как артефакт для **maven** `com.greengray:advsdk`
 
-актуальная версия библиотеки `com.greengray:advsdk:1.4.0`
+актуальная версия библиотеки `com.greengray:advsdk:1.5.1`
 
 Для работы с библиотекой необходим **GAME_ID** - идентификатор приложения в системе показа рекламы.
 Напишите на [a.bobkov@mobidriven.com](a.bobkov@mobidriven.com), чтобы получить идентификатор.
@@ -201,9 +268,9 @@ dependencyResolutionManagement {
     }}
 ```
 
-2. добавить библиотеку `com.greengray:advsdk:1.4.0` в блок зависимостей **build.gradle** уровня модуля
+2. добавить библиотеку `com.greengray:advsdk:1.5.1` в блок зависимостей **build.gradle** уровня модуля
 
-```implementation 'com.greengray:advsdk:1.4.0'```
+```implementation 'com.greengray:advsdk:1.5.1'```
     
 ![Screenshot_4.png](/images/Screenshot_4.png)
 
@@ -212,8 +279,8 @@ dependencyResolutionManagement {
 5. Для запуска примера необходимо прописать полученный идентификатор **GAME_ID** в методе инициализации **AdvSDK**, более подробно можно посмотреть  [в примере](#lib_work)
 
 ```Kotlin
-AdvSDK.INSTANCE.initialize(  
-    context: Application,  
+AdvSDK.initialize(  
+    context: Activity,  
     gameId: String,  
     isTestMode: Boolean,  
     listener: IAdInitializationListener  
@@ -229,12 +296,17 @@ AdvSDK.INSTANCE.initialize(
 
 Соответствующие функции класса **AdvSDK** вызываются при нажатии кнопок на экране.
 
-Для загрузки используется функция **Load**, которая загружает рекламное объявление из сети или из кэша, если загрузка была проведена ранее.
+Для загрузки используется функция **Load**, которая загружает рекламное объявление из сети и сохраняет в кеш.
+
+Для отображения рекламы используется функция **show**, которая показывает рекламное объявление из из кэша, если загрузка была проведена ранее.
+
+Для отображения используется функция **showBanner** , которая показывает рекламное объявление из из кэша, если загрузка была проведена ранее. Для скрытия баннера используется метод **hideBanner**.
 
 Данный код можно протестировать в  **MainActivity**, поставляющейся в пакете вместе с **SDK**.
 
 ```Kotlin
-class MainActivity : AppCompatActivity(), IAdInitializationListener, IAdLoadListener, IAdShowListener {  
+class MainActivity : AppCompatActivity(), IAdInitializationListener, IAdLoadListener, IAdShowListener,  IAdShowBannerListener, IAdHideBannerListener {
+
     var advId :  String? = null  
     private lateinit var recyclerView: RecyclerView  
   
@@ -250,48 +322,95 @@ class MainActivity : AppCompatActivity(), IAdInitializationListener, IAdLoadList
         }  
   
         findViewById<View>(R.id.btnInit).setOnClickListener {  
-            AdvSDK.INSTANCE.initialize(this.application, MY_GAME_ID,  true, this)  
+            AdvSDK.initialize(this.application, MY_GAME_ID,  true, this)  
         }  
   
         findViewById<View>(R.id.btnLoadRewarded).setOnClickListener {  
-            AdvSDK.INSTANCE.load(AdvertiseType.REWARDED,this)  
-        }  
+            AdvSDK.load(AdvertiseType.REWARDED,this)  
+        }
+
         findViewById<View>(R.id.btnLoadInterstitial).setOnClickListener {  
-            AdvSDK.INSTANCE.load(AdvertiseType.INTERSTITIAL, object : IAdLoadListener {  
+            AdvSDK.load(AdvertiseType.INTERSTITIAL, object : IAdLoadListener {  
                 override fun onLoadComplete(id: String) {  
                     advId = id  
                     addLog("INTERSTITIAL onLoadComplete, id = $id")  
                 }  
                 override fun onLoadError(error: LoadErrorType, errorMessage: String, id: String) {  
                     addLog("INTERSTITIAL onLoadError, id = $id, ${error.name}, errorMessage $errorMessage")  
-                }            })        }  
+                }
+            })
+        }
+
         findViewById<View>(R.id.btnShow).setOnClickListener {  
             advId?.let {  
-                AdvSDK.INSTANCE.show(it, this)  
+                AdvSDK.show(it, this)  
             }  
-        }    }  
-  
+        }
+
+        findViewById<View>(R.id.btnLoadBanner).setOnClickListener {
+            AdvSDK.load(AdvertiseType.BANNER, listener = object : IAdLoadListener {
+                override fun onLoadComplete(id: String?) {
+                    addLog("BANNER onLoadComplete, id = $id")
+                }
+
+                override fun onLoadError(error: LoadErrorType, errorMessage: String, id: String?) {
+                    addLog("BANNER onLoadError, id = $id, ${error.name} , errorMessage $errorMessage")
+                }
+            })
+        }
+
+        findViewById<View>(R.id.btnShowBanner).setOnClickListener {
+            advId?.let {
+                AdvSDK.showBanner(it, this) 
+            } 
+        }
+    }  
+    
+    
     private fun addLog(log: String) {  
         logsAdapter.addLog(log)  
         recyclerView.smoothScrollToPosition(logsAdapter.itemCount - 1)  
-    }  
+    }
+
     override fun onInitializationComplete() {  
         addLog("initialization complete")  
-    }  
+    }
+
     override fun onInitializationError(error: InitializationErrorType, message: String) {  
         addLog("initialization error = ${error.name}, $message")  
-    }  
+    }
+
     override fun onShowChangeState(id: String, state: ShowCompletionState) {  
         addLog("show change state, id = $id state = ${state.name}")  
-    }  
+    }
+
     override fun onShowError(id: String, error: ShowErrorType, message: String) {  
         addLog("show error, id = $id message = $message")  
-    }  
+    }
+ 
     override fun onLoadComplete(id: String) {  
         advId = id  
         addLog("load complete, id = $id")  
-    }  
+    }
+
     override fun onLoadError(error: LoadErrorType, message: String, id: String) {  
         addLog("load error, id = $id, message $message")  
-    }}
+    }
+
+    override fun onBannerShow(id: String?) {
+        addLog("onBannerShow, id = $id")
+    }
+
+    override fun onBannerShowError(error: ShowErrorType, errorMessage: String, id: String?) {
+        addLog("onBannerShowError, id = $id errorMessage = ${error.name}")
+    }
+
+    override fun onBannerHide(id: String?) {
+        addLog("onBannerHide, id = $id")
+    }
+
+    override fun onBannerHideError(error: ShowErrorType, errorMessage: String, id: String?) {
+        addLog("onBannerHideError, id = $id errorMessage = ${error.name}")
+    }
+}
 ```
