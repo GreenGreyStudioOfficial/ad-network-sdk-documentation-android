@@ -8,24 +8,30 @@ _____
 
 Включает в себя следующие публичные методы:
 
-- [Initialize](#initialize): инициализации работы **SDK**;
-- [Load](#api_load): загрузка доступного рекламного объявления из сети или из кэша;
-- [Show](#api_show): показ загруженного рекламного объявления.
+- [initialize](#initialize): инициализации работы **SDK**;
+- [load](#api_load): загрузка доступного рекламного объявления из сети или из кэша;
+- [show](#api_show): показ загруженного рекламного объявления;
+- [showBanner](#api_showBanner): показ загруженного баннера
+- [hideBanner](#api_hideBanner): скрытие отображдаемого баннера
 
 ## Содержание
 
-- [Метод Initialize](#initialize)
-- [Метод Load](#api_load)
-- [Метод Show](#api_show)
+- [Метод initialize](#initialize)
+- [Метод load](#api_load)
+- [Метод show](#api_show)
+- [Метод showBanner](#api_showBanner)
+- [Метод hideBanner](#api_hideBanner)
 - [Слушатели](#listeners)
 - [Слушатель инициализации](#l_initialization)
 - [Слушатель загрузки](#l_load)
 - [Слушатель показа](#l_show)
+- [Слушатель показа баннера](#l_showBanner)
+- [Слушатель скрытия баннера](#l_hideBanner)
 - [Модель объекта AdNetworkInitParams](#AdNetworkInitParams)
 
 ## Метод Initialize <a name = "initialize"></a>
 
-Метод **Initialize** инициализирует работу **SDK**.
+Метод **initialize** инициализирует работу **SDK**.
 
 На вход передаются параметры инициализации **SDK** и реализация слушателя [IAdInitializationListener](#IAdInitializationListener)
 
@@ -45,7 +51,7 @@ _____
 
 ```Kotlin
 fun initialize(  
-    context: Application,  
+    context: Activity,  
     gameId: String,  
     isTestMode: Boolean,  
     listener: IAdInitializationListener  
@@ -56,7 +62,7 @@ fun initialize(
 
 | Тип| Имя| Описание|
 |---|---|---|
-|Application| context| Контекст приложения|
+|Activity| context| Контекст активити|
 |String| gameId| **GAME_ID** - идентификатор приложения в системе показа рекламы. |
 |[IAdInitializationListener](#IAdInitializationListener)| listener| Реализация слушателя инициализации|
 
@@ -78,7 +84,7 @@ fun load(advertiseType: AdvertiseType, listener: IAdLoadListener)
 
 где:
 
-`AdvertiseType` - тип рекламного объявления (см. [AdvertiseType](#adtype));
+`AdvertiseType` - тип рекламного объявления INTERSTITIAL | REWARDED | BANNER (см. [AdvertiseType](#adtype));
 
 `IAdLoadListener` - реализация слушателя загрузки (см. [IAdLoadListener](#IAdLoadListener));
 
@@ -119,11 +125,13 @@ fun show(id: String, iAdShowListener: IAdShowListener)
 
 Слушатели (или **listeners**) - это интерфейсы, которые дают возможность контролировать процессы инициализации, загрузки и показа рекламных объявлений.
 
-В системе используется три вида слушателей:
+В системе используется 5 видов слушателей:
 
 - [Слушатель инициализации IAdInitializationListener](#l_initialization);
 - [Слушатель загрузки IAdLoadListener](#l_load);
-- [Слушатель показа IAdShowListener](#l_show).
+- [Слушатель показа IAdShowListener](#l_show)
+- [Слушатель показа баннера IAdShowBannerListener](#l_showBanner)
+- [Слушатель скрытия баннера IAdHideBannerListener](#l_hideBanner).
 
 ## Слушатель инициализации <a name = "l_initialization"></a>
 
@@ -241,8 +249,8 @@ fun onLoadError(error: LoadErrorType, errorMessage: String, id: String)
 
 **Объявление**:
 
-```C#
-fun onShowChangeState(id: String, state: ShowCompletionState)
+```Kotlin
+fun onShowChangeState(id: String?, state: ShowCompletionState)
 ```
 
 где:
@@ -268,7 +276,7 @@ fun onShowChangeState(id: String, state: ShowCompletionState)
 **Объявление**:
 
 ```Kotlin
-fun onShowError(id: String, error: ShowErrorType, errorMessage: String)
+fun onShowError(error: ShowErrorType, errorMessage: String, id: String?)
 ```
 
 где:
@@ -288,3 +296,88 @@ fun onShowError(id: String, error: ShowErrorType, errorMessage: String)
 |VIDEO_PLAYER_ERROR| Ошибка видеоплеера|
 |NO_LOADED_CONTENT| Нет загруженного контента|
 | NOT_SUPPORTED_AD_TYPE| Неподдерживаемый тип рекламного объявления|
+
+
+## Слушатель показа баннера<a name = "l_showBanner"></a>
+
+Интерфейс слушателя показа рекламного баннера **IAdShowBannerListener** используется для контроля выполнения процесса показа.
+
+Поддерживает следующие публичные методы:
+
+- [[#onBannerShow]] - обработчик завершения показа объявления;
+- [[#onBannerShowError]] - обработчик ошибок показа рекламного баннера.
+
+Обработчик вызывается при отображении баннера.
+
+**Объявление**:
+
+```Kotlin
+fun onBannerShow(id: String?)
+```
+
+где:
+
+|Тип| Имя| Описание|
+|---|---|---|
+| String| id| плейсмент ИД рекламного объявления|
+
+### onBannerShowError <a name = "onBannerShowError"></a>  
+
+Обработчик ошибок показа рекламного объявления вызывается, когда показ прошел с ошибкой.
+
+**Объявление**:
+
+```Kotlin
+fun onBannerShowError(error: ShowErrorType, errorMessage: String, id: String?)
+```
+
+где:
+
+|Тип| Имя| Описание| 
+|---|---|---|
+| String| id| плейсмент ИД рекламного объявления|
+| ShowErrorType | error| Тип ошибки|
+| string | errorMessage| описание ошибки|
+
+
+## Слушатель скрытия баннера<a name = "l_hideBanner"></a>
+
+Интерфейс слушателя скрытия рекламного баннера **IAdHideBannerListener** используется для скрытия отображаемого рекламного баннера.
+
+Поддерживает следующие публичные методы:
+
+- [[#onBannerHide]] - обработчик завершения скрытия объявления;
+- [[#onBannerHideError]] - обработчик ошибок скрытия рекламного баннера.
+
+Обработчик вызывается при скрытии рекламного баннера.
+
+**Объявление**:
+
+```Kotlin
+fun onBannerHide(id: String?)
+```
+
+где:
+
+|Тип| Имя| Описание|
+|---|---|---|
+| String| id| плейсмент ИД рекламного объявления|
+
+### onBannerHideError <a name = "onBannerHideError"></a>  
+
+Обработчик ошибок показа рекламного объявления вызывается, когда показ прошел с ошибкой.
+
+**Объявление**:
+
+```Kotlin
+fun onBannerHideError(error: ShowErrorType, errorMessage: String, id: String?)
+```
+
+где:
+
+|Тип| Имя| Описание| 
+|---|---|---|
+| String| id| плейсмент ИД рекламного объявления|
+| ShowErrorType | error| Тип ошибки|
+| string | errorMessage| описание ошибки|
+
